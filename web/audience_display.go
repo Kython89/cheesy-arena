@@ -15,7 +15,7 @@ import (
 // Renders the audience display to be chroma keyed over the video feed.
 func (web *Web) audienceDisplayHandler(w http.ResponseWriter, r *http.Request) {
 	if !web.enforceDisplayConfiguration(w, r, map[string]string{"background": "#0f0", "reversed": "false",
-		"overlayLocation": "bottom"}) {
+		"overlayLocation": "top"}) {
 		return
 	}
 
