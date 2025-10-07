@@ -55,7 +55,7 @@ UI for entering realtime scores.
     <div class="counter-wrapper">
       {{if .Position.ScoresBarge}}
       {{template "counter" (dict "id" "barge" "label" "Barge Algae")}}
-      {{else if and .Position.ScoresProcessor (not .PlcIsEnabled)}}
+      {{else if and .Position.ScoresProcessor }}
       {{template "counter" (dict "id" "processor" "label" "Processor Algae")}}
       {{end}}
     </div>
