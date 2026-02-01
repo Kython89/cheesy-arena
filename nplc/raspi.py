@@ -34,7 +34,7 @@ class BallCounter:
         self.count = 0
         self.active = False
 
-    def set_active(active: bool) -> None:
+    def set_active(self, active: bool) -> None:
         self.active = active
 
 # ---------------- FastAPI setup ---------------- #
@@ -48,23 +48,23 @@ async def startup() -> None:
     counter.start_tasks()
 
 @app.get("/status")
-def get_count():
-    return {"count": counter.count, "active": counter.active}
+def status():
+    return {"state": "running" if counter.active else "stopped", "count": counter.count}
 
 @app.post("/reset")
-def reset_count():
+def reset():
     counter.reset()
-    return {"count": counter.count}
+    return {"ok": True}
 
 @app.post("/start")
-def reset_count():
+def start():
     counter.set_active(True)
-    return {"active": counter.active}
+    return {"ok": True}
 
 @app.post("/stop")
-def reset_count():
+def stop():
     counter.set_active(False)
-    return {"active": counter.active}
+    return {"ok": True}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="10.0.0.10", port=8000)
