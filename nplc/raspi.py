@@ -18,7 +18,7 @@ class BallCounter:
         GPIO.setup(self.led_pin, GPIO.OUT)
 
     async def _read_sensor(self, pin: int) -> None:
-        prev_state = True
+        prev_state = False
         while True:
             current_state = GPIO.input(pin)
             if self.active and not current_state and prev_state:
