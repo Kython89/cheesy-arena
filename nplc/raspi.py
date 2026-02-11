@@ -82,4 +82,4 @@ def lights_off():
     return {"ok": True}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="10.0.0.10", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
