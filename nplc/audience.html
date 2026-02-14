@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FRC Scoreboard</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: green;
+            font-family: "Arial Black", sans-serif;
+            color: white;
+        }
+
+        #match-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: green;
+            padding: 20px 0;
+            font-size: 3vw;
+            color: white;
+        }
+
+        #match-info div {
+            text-align: center;
+        }
+
+        #scores {
+            display: flex;
+            justify-content: center;
+            margin-top: 50px;
+            font-size: 8vw;
+        }
+
+        .score-box {
+            width: 300px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 50px;
+            border-radius: 10px;
+        }
+
+        .red-box {
+            background-color: #FF0000;
+        }
+
+        .blue-box {
+            background-color: #0000FF;
+        }
+
+        .alliance-label {
+            font-size: 2vw;
+            color: #FFFFFF;
+        }
+
+        #hub-active {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 3vw;
+            color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div id="match-info">
+        <div>
+            Total Time:<br>
+            <span id="total-time">0.00</span>s
+        </div>
+        <div>
+            Phase Time Left:<br>
+            <span id="phase-time">0.00</span>s
+        </div>
+        <div>
+            Current Phase:<br>
+            <span id="current-phase">AUTO</span>
+        </div>
+    </div>
+
+    <div id="hub-active">Hub Active: both</div>
+
+    <div id="scores">
+        <div class="score-box red-box">
+            <div class="alliance-label">RED</div>
+            <div id="red-score">0</div>
+        </div>
+        <div class="score-box blue-box">
+            <div class="alliance-label">BLUE</div>
+            <div id="blue-score">0</div>
+        </div>
+    </div>
+
+    <script>
+        const totalTimeEl = document.getElementById("total-time");
+        const phaseTimeEl = document.getElementById("phase-time");
+        const currentPhaseEl = document.getElementById("current-phase");
+        const hubActiveEl = document.getElementById("hub-active");
+        const redScoreEl = document.getElementById("red-score");
+        const blueScoreEl = document.getElementById("blue-score");
+
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            totalTimeEl.textContent = data.total_game_time.toFixed(2);
+            phaseTimeEl.textContent = data.time_left_in_phase.toFixed(2);
+            currentPhaseEl.textContent = data.current_phase;
+            hubActiveEl.textContent = `Hub Active: ${data.hub_active}`;
+            redScoreEl.textContent = data.red_score;
+            blueScoreEl.textContent = data.blue_score;
+        };
+    </script>
+</body>
+</html>
