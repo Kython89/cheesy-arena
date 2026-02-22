@@ -44,14 +44,21 @@ func (web *Web) matchPlayHandler(w http.ResponseWriter, r *http.Request) {
 		handleWebErr(w, err)
 		return
 	}
+	teams, err := web.arena.Database.GetAllTeams()
+	if err != nil {
+		handleWebErr(w, err)
+		return
+	}
 	data := struct {
 		*model.EventSettings
 		PlcIsEnabled          bool
 		PlcArmorBlockStatuses map[string]bool
+		Teams                 []model.Team
 	}{
 		web.arena.EventSettings,
 		web.arena.Plc.IsEnabled(),
 		web.arena.Plc.GetArmorBlockStatuses(),
+		teams,
 	}
 	err = template.ExecuteTemplate(w, "base", data)
 	if err != nil {

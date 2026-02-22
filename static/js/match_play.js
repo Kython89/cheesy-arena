@@ -120,8 +120,10 @@ const setTestMatchName = function () {
 
 // Returns the integer team number entered into the team number input box for the given station, or 0 if it is empty.
 const getTeamNumber = function (station) {
-  const teamId = $(`#status${station} .team-number`).val().trim();
-  return teamId ? parseInt(teamId) : 0;
+  const raw = $(`#status${station} .team-number`).val().trim();
+  if (!raw) return 0;
+  const num = parseInt(raw);
+  return isNaN(num) ? 0 : num;
 }
 
 // Handles a websocket message to update the team connection status.
