@@ -15,7 +15,18 @@ Single-line text display for the back of the team sign.
   </head>
   <body>
     <div id="displayContainer">
-      <span id="displayText"></span>
+      <div id="displayLine1"></div>
+      <div id="displayLine2">
+        <span>A:</span><span id="autoCount">0</span>
+        <span>T:</span><span id="transitionCount">0</span>
+        <span>E:</span><span id="endGameCount">0</span>
+      </div>
+      <div id="displayLine3">
+        <span>1:</span><span id="shift1Count">0</span>
+        <span>2:</span><span id="shift2Count">0</span>
+        <span>3:</span><span id="shift3Count">0</span>
+        <span>4:</span><span id="shift4Count">0</span>
+      </div>
     </div>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>

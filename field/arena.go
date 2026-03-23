@@ -1551,7 +1551,8 @@ func (arena *Arena) PlaySound(name string) {
 func (arena *Arena) trackShiftFuel(score *game.Score, delta int, phase game.MatchPhase, hubActive bool) {
 	if hubActive {
 		switch phase {
-		case game.PhaseTransition:
+		case game.PhaseAuto, game.PhaseTransition:
+			// PhaseAuto can occur during teleop grace period - count as transition
 			score.TransitionFuel += delta
 		case game.PhaseShift1:
 			score.Shift1Fuel += delta
@@ -1566,7 +1567,8 @@ func (arena *Arena) trackShiftFuel(score *game.Score, delta int, phase game.Matc
 		}
 	} else {
 		switch phase {
-		case game.PhaseTransition:
+		case game.PhaseAuto, game.PhaseTransition:
+			// PhaseAuto can occur during teleop grace period - count as transition
 			score.TransitionFuelInactive += delta
 		case game.PhaseShift1:
 			score.Shift1FuelInactive += delta

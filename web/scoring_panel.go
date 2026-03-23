@@ -270,7 +270,8 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 func trackShiftFuelForScoring(score *game.Score, delta int, phase game.MatchPhase, hubActive bool) {
 	if hubActive {
 		switch phase {
-		case game.PhaseTransition:
+		case game.PhaseAuto, game.PhaseTransition:
+			// PhaseAuto can occur during teleop grace period - count as transition
 			score.TransitionFuel += delta
 		case game.PhaseShift1:
 			score.Shift1Fuel += delta
@@ -285,7 +286,8 @@ func trackShiftFuelForScoring(score *game.Score, delta int, phase game.MatchPhas
 		}
 	} else {
 		switch phase {
-		case game.PhaseTransition:
+		case game.PhaseAuto, game.PhaseTransition:
+			// PhaseAuto can occur during teleop grace period - count as transition
 			score.TransitionFuelInactive += delta
 		case game.PhaseShift1:
 			score.Shift1FuelInactive += delta

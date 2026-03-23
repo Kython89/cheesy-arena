@@ -18,10 +18,30 @@ body {
 #displayContainer {
   width: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1vh;
 }
-#displayText {
-  color: #f00; /* Bright red */
+#displayLine1 {
+  color: #f00; /* Default red, changed by JS for blue alliance */
   font-family: "FuturaLTBold", sans-serif;
-  font-size: 15vh; /* Adjusted for single line */
+  font-size: 12vh;
   white-space: nowrap;
+}
+#displayLine2, #displayLine3 {
+  font-family: "FuturaLTBold", sans-serif;
+  font-size: 8vh;
+  white-space: nowrap;
+}
+#displayLine2 span, #displayLine3 span {
+  margin: 0 0.5em;
+}
+/* Active shift color - set by JS */
+.shift-active {
+  color: #f00; /* Red by default, changed by JS for blue */
+}
+/* Inactive shift color */
+.shift-inactive {
+  color: #fff; /* White */
 }

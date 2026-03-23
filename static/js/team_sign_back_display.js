@@ -145,22 +145,58 @@ const getShiftInfo = function () {
   return { shiftChar: "P", timeLeft: 0, activeAlliance: "Both" };
 };
 
+// Determines which shifts are active for the display alliance based on who won auto
+const getActiveShifts = function () {
+  const redWonAuto = didRedWinAuto();
+  const isRed = (displayAlliance === "Red");
+
+  // The alliance that LOST auto has their hub active first (shifts 1 and 3)
+  // The alliance that WON auto has their hub active second (shifts 2 and 4)
+  if (isRed) {
+    if (redWonAuto) {
+      // Red won, so Red is INACTIVE first -> Red active on shifts 2 and 4
+      return { shift1: false, shift2: true, shift3: false, shift4: true };
+    } else {
+      // Red lost or tie, so Red is ACTIVE first -> Red active on shifts 1 and 3
+      return { shift1: true, shift2: false, shift3: true, shift4: false };
+    }
+  } else {
+    // Blue alliance
+    if (redWonAuto) {
+      // Red won, so Blue lost -> Blue is ACTIVE first -> Blue active on shifts 1 and 3
+      return { shift1: true, shift2: false, shift3: true, shift4: false };
+    } else {
+      // Blue won or tie, so Blue is INACTIVE first -> Blue active on shifts 2 and 4
+      return { shift1: false, shift2: true, shift3: false, shift4: true };
+    }
+  }
+};
+
 const updateDisplay = function () {
   if (!currentMatch) {
-    $("#displayText").text("WAITING");
+    $("#displayLine1").text("WAITING");
+    $("#displayLine2").hide();
+    $("#displayLine3").hide();
     return;
   }
 
   // Only show during Test, Practice and Qualification matches (not Playoff)
   if (currentMatch.Type === matchTypePlayoff) {
-    $("#displayText").text("QUAL ONLY");
+    $("#displayLine1").text("QUAL ONLY");
+    $("#displayLine2").hide();
+    $("#displayLine3").hide();
     return;
   }
 
   if (!currentMatchTimeData || !matchTiming) {
-    $("#displayText").text("P00 0/100 0 0:00");
+    $("#displayLine1").text("P00 0/100 0 0:00");
+    $("#displayLine2").hide();
+    $("#displayLine3").hide();
     return;
   }
+
+  $("#displayLine2").show();
+  $("#displayLine3").show();
 
   // 1. Current SHIFT and time remaining in that period
   const shiftInfo = getShiftInfo();
@@ -172,9 +208,16 @@ const updateDisplay = function () {
   // Only AutoFuel + ActiveFuel count towards RP (not InactiveFuel)
   let fuelForRP = 0;
   let fuelThreshold = energizedRPThreshold;
-  let autoTowerPoints = 0;
-
   let thirdFieldValue = 0;
+
+  // Shift-by-shift counts
+  let autoCount = 0;
+  let transitionCount = 0;
+  let endGameCount = 0;
+  let shift1Count = 0;
+  let shift2Count = 0;
+  let shift3Count = 0;
+  let shift4Count = 0;
 
   if (currentScoreData) {
     const score = currentScoreData[displayAlliance].Score;
@@ -191,6 +234,15 @@ const updateDisplay = function () {
       // Show auto climb points
       thirdFieldValue = currentScoreData[displayAlliance].ScoreSummary.AutoClimbPoints;
     }
+
+    // Get shift-by-shift counts (active + inactive for each phase)
+    autoCount = score.AutoFuel || 0;
+    transitionCount = (score.TransitionFuel || 0) + (score.TransitionFuelInactive || 0);
+    endGameCount = (score.EndGameFuel || 0) + (score.EndGameFuelInactive || 0);
+    shift1Count = (score.Shift1Fuel || 0) + (score.Shift1FuelInactive || 0);
+    shift2Count = (score.Shift2Fuel || 0) + (score.Shift2FuelInactive || 0);
+    shift3Count = (score.Shift3Fuel || 0) + (score.Shift3FuelInactive || 0);
+    shift4Count = (score.Shift4Fuel || 0) + (score.Shift4FuelInactive || 0);
   }
 
   const rpProgress = fuelForRP + "/" + fuelThreshold;
@@ -204,8 +256,23 @@ const updateDisplay = function () {
     matchTimeRemaining = getCountdownString(countdownSec);
   });
 
+  // Update line 1 (main display)
   const fullText = shiftDisplay + " " + rpProgress + " " + thirdFieldDisplay + " " + matchTimeRemaining;
-  $("#displayText").text(fullText);
+  $("#displayLine1").text(fullText);
+
+  // Update line 2 (A, T, E counts) - always alliance color since these are always active
+  $("#autoCount").text(autoCount);
+  $("#transitionCount").text(transitionCount);
+  $("#endGameCount").text(endGameCount);
+
+  // Update line 3 (shift counts) with active/inactive coloring
+  const activeShifts = getActiveShifts();
+  const allianceColor = (displayAlliance === "Blue") ? "#00f" : "#f00";
+
+  $("#shift1Count").text(shift1Count).css("color", activeShifts.shift1 ? allianceColor : "#fff");
+  $("#shift2Count").text(shift2Count).css("color", activeShifts.shift2 ? allianceColor : "#fff");
+  $("#shift3Count").text(shift3Count).css("color", activeShifts.shift3 ? allianceColor : "#fff");
+  $("#shift4Count").text(shift4Count).css("color", activeShifts.shift4 ? allianceColor : "#fff");
 };
 
 $(function () {
@@ -215,13 +282,19 @@ $(function () {
 
   // Set which alliance's data to display (default to Red)
   const allianceParam = urlParams.get("alliance");
+  let allianceColor;
   if (allianceParam && allianceParam.toLowerCase() === "blue") {
     displayAlliance = "Blue";
-    $("#displayText").css("color", "#00f"); // Blue text
+    allianceColor = "#00f";
   } else {
     displayAlliance = "Red";
-    $("#displayText").css("color", "#f00"); // Red text
+    allianceColor = "#f00";
   }
+
+  // Set colors for main display line and A/T/E counts (always alliance color)
+  $("#displayLine1").css("color", allianceColor);
+  $("#displayLine2").css("color", allianceColor);
+  // Line 3 shift colors are set dynamically in updateDisplay based on active/inactive
 
   // Set whether to show inactive fuel instead of auto climb points
   const showInactiveParam = urlParams.get("show_inactive");
