@@ -1241,21 +1241,28 @@ func (arena *Arena) handlePlcInputOutput() {
 				redWonAuto, blueWonAuto := arena.determineAutoWinner()
 
 				matchTimeSec := arena.MatchTimeSec()
+				matchPhase := game.GetMatchPhase(matchTimeSec)
 
 				if redDelta > 0 {
-					if game.IsRedHubActiveForScoring(matchTimeSec, redWonAuto) {
+					redHubActive := game.IsRedHubActiveForScoring(matchTimeSec, redWonAuto)
+					if redHubActive {
 						redScore.ActiveFuel += redDelta
 					} else {
 						redScore.InactiveFuel += redDelta
 					}
+					// Track shift-by-shift fuel for diagnostics
+					arena.trackShiftFuel(redScore, redDelta, matchPhase, redHubActive)
 				}
 
 				if blueDelta > 0 {
-					if game.IsBlueHubActiveForScoring(matchTimeSec, blueWonAuto) {
+					blueHubActive := game.IsBlueHubActiveForScoring(matchTimeSec, blueWonAuto)
+					if blueHubActive {
 						blueScore.ActiveFuel += blueDelta
 					} else {
 						blueScore.InactiveFuel += blueDelta
 					}
+					// Track shift-by-shift fuel for diagnostics
+					arena.trackShiftFuel(blueScore, blueDelta, matchPhase, blueHubActive)
 				}
 			}
 		}
@@ -1537,6 +1544,41 @@ func (arena *Arena) handleSounds(matchTimeSec float64) {
 func (arena *Arena) PlaySound(name string) {
 	if !arena.MuteMatchSounds {
 		arena.PlaySoundNotifier.NotifyWithMessage(name)
+	}
+}
+
+// trackShiftFuel tracks fuel scored during each match phase for diagnostic purposes.
+func (arena *Arena) trackShiftFuel(score *game.Score, delta int, phase game.MatchPhase, hubActive bool) {
+	if hubActive {
+		switch phase {
+		case game.PhaseTransition:
+			score.TransitionFuel += delta
+		case game.PhaseShift1:
+			score.Shift1Fuel += delta
+		case game.PhaseShift2:
+			score.Shift2Fuel += delta
+		case game.PhaseShift3:
+			score.Shift3Fuel += delta
+		case game.PhaseShift4:
+			score.Shift4Fuel += delta
+		case game.PhaseEndGame:
+			score.EndGameFuel += delta
+		}
+	} else {
+		switch phase {
+		case game.PhaseTransition:
+			score.TransitionFuelInactive += delta
+		case game.PhaseShift1:
+			score.Shift1FuelInactive += delta
+		case game.PhaseShift2:
+			score.Shift2FuelInactive += delta
+		case game.PhaseShift3:
+			score.Shift3FuelInactive += delta
+		case game.PhaseShift4:
+			score.Shift4FuelInactive += delta
+		case game.PhaseEndGame:
+			score.EndGameFuelInactive += delta
+		}
 	}
 }
 

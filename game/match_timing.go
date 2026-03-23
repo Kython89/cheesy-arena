@@ -55,6 +55,84 @@ func GetCurrentShift(matchTimeSec float64) int {
 	return int(teleopElapsedSec / ShiftDurationSec)
 }
 
+// MatchPhase represents the current phase of the match for diagnostic tracking
+type MatchPhase int
+
+const (
+	PhaseAuto       MatchPhase = iota // Auto period
+	PhaseTransition                   // First 10 seconds of teleop
+	PhaseShift1                       // First alternating shift (10-35 sec into teleop)
+	PhaseShift2                       // Second alternating shift (35-60 sec into teleop)
+	PhaseShift3                       // Third alternating shift (60-85 sec into teleop)
+	PhaseShift4                       // Fourth alternating shift (85-110 sec into teleop)
+	PhaseEndGame                      // Last 30 seconds of teleop (110-140 sec into teleop)
+	PhaseNone                         // Not in a scoring period
+)
+
+// GetMatchPhase returns the current match phase for diagnostic tracking.
+// This is used to track fuel scored in each shift.
+// Accounts for the 3-second grace period where fuel scored at the start of a new phase
+// is still attributed to the previous phase (due to scoring mechanism processing time).
+func GetMatchPhase(matchTimeSec float64) MatchPhase {
+	teleopStartSec := float64(MatchTiming.WarmupDurationSec + MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec)
+	teleopEndSec := teleopStartSec + float64(MatchTiming.TeleopDurationSec)
+	transitionEndSec := teleopStartSec + float64(TransitionDurationSec)
+	endGameStartSec := teleopEndSec - float64(EndGameDurationSec)
+	gracePeriodSec := float64(HubScoringGracePeriodSec)
+
+	// Before teleop starts (auto or pause), or in grace period after auto ends
+	if matchTimeSec < teleopStartSec+gracePeriodSec {
+		return PhaseAuto
+	}
+
+	// After match ends (no grace period needed - match is over)
+	if matchTimeSec >= teleopEndSec {
+		return PhaseNone
+	}
+
+	// End game (last 30 seconds of teleop), accounting for grace period into end game
+	// Once in end game, we stay in end game (no phase after it during match)
+	if matchTimeSec >= endGameStartSec+gracePeriodSec {
+		return PhaseEndGame
+	}
+
+	// Transition period (first 10 seconds of teleop), or grace period into shift 1
+	if matchTimeSec < transitionEndSec+gracePeriodSec {
+		return PhaseTransition
+	}
+
+	// Alternating shifts (10-110 seconds into teleop)
+	// Account for grace period by subtracting it from the elapsed time
+	postTransitionSec := matchTimeSec - transitionEndSec - gracePeriodSec
+	if postTransitionSec < 0 {
+		return PhaseTransition
+	}
+
+	shift := int(postTransitionSec / ShiftDurationSec)
+	// Check if we're in the grace period for the next shift
+	timeInShift := postTransitionSec - float64(shift)*ShiftDurationSec
+	if timeInShift < gracePeriodSec && shift > 0 {
+		shift-- // Still count as previous shift during grace period
+	}
+
+	switch shift {
+	case 0:
+		return PhaseShift1
+	case 1:
+		return PhaseShift2
+	case 2:
+		return PhaseShift3
+	case 3:
+		return PhaseShift4
+	default:
+		// This handles the grace period before end game
+		if matchTimeSec >= endGameStartSec && matchTimeSec < endGameStartSec+gracePeriodSec {
+			return PhaseShift4
+		}
+		return PhaseEndGame
+	}
+}
+
 // IsRedHubActive returns true if the red alliance's hub is currently active.
 // During auto and pause, both hubs are active.
 // During the first 10 seconds of teleop (transition period), both hubs are active.

@@ -14,6 +14,20 @@ type Score struct {
 	TeleopClimbStatuses [3]EndgameStatus // Climb status at end of teleop (Levels 1-3)
 	Fouls               []Foul
 	PlayoffDq           bool
+
+	// Diagnostic shift-by-shift fuel tracking (for analysis purposes only, not used in scoring)
+	TransitionFuel         int // FUEL scored during transition period (first 10 sec of teleop)
+	Shift1Fuel             int // FUEL scored during shift 1
+	Shift2Fuel             int // FUEL scored during shift 2
+	Shift3Fuel             int // FUEL scored during shift 3
+	Shift4Fuel             int // FUEL scored during shift 4
+	EndGameFuel            int // FUEL scored during end game (last 30 sec of teleop)
+	TransitionFuelInactive int // Inactive FUEL scored during transition period
+	Shift1FuelInactive     int // Inactive FUEL scored during shift 1
+	Shift2FuelInactive     int // Inactive FUEL scored during shift 2
+	Shift3FuelInactive     int // Inactive FUEL scored during shift 3
+	Shift4FuelInactive     int // Inactive FUEL scored during shift 4
+	EndGameFuelInactive    int // Inactive FUEL scored during end game
 }
 
 // Game-specific settings that can be changed via the settings.
@@ -149,7 +163,19 @@ func (score *Score) Equals(other *Score) bool {
 		score.AutoClimbStatuses != other.AutoClimbStatuses ||
 		score.TeleopClimbStatuses != other.TeleopClimbStatuses ||
 		score.PlayoffDq != other.PlayoffDq ||
-		len(score.Fouls) != len(other.Fouls) {
+		len(score.Fouls) != len(other.Fouls) ||
+		score.TransitionFuel != other.TransitionFuel ||
+		score.Shift1Fuel != other.Shift1Fuel ||
+		score.Shift2Fuel != other.Shift2Fuel ||
+		score.Shift3Fuel != other.Shift3Fuel ||
+		score.Shift4Fuel != other.Shift4Fuel ||
+		score.EndGameFuel != other.EndGameFuel ||
+		score.TransitionFuelInactive != other.TransitionFuelInactive ||
+		score.Shift1FuelInactive != other.Shift1FuelInactive ||
+		score.Shift2FuelInactive != other.Shift2FuelInactive ||
+		score.Shift3FuelInactive != other.Shift3FuelInactive ||
+		score.Shift4FuelInactive != other.Shift4FuelInactive ||
+		score.EndGameFuelInactive != other.EndGameFuelInactive {
 		return false
 	}
 

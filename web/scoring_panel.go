@@ -230,11 +230,27 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 			// TODO: Add REBUILT-specific scoring commands here
 			switch command {
 			case "activeFuel":
+				oldActiveFuel := score.ActiveFuel
 				score.ActiveFuel = max(0, score.ActiveFuel+args.Adjustment)
-				scoreChanged = true
+				delta := score.ActiveFuel - oldActiveFuel
+				if delta != 0 {
+					// Track shift-by-shift fuel for diagnostics
+					matchTimeSec := web.arena.MatchTimeSec()
+					phase := game.GetMatchPhase(matchTimeSec)
+					trackShiftFuelForScoring(score, delta, phase, true)
+					scoreChanged = true
+				}
 			case "inactiveFuel":
+				oldInactiveFuel := score.InactiveFuel
 				score.InactiveFuel = max(0, score.InactiveFuel+args.Adjustment)
-				scoreChanged = true
+				delta := score.InactiveFuel - oldInactiveFuel
+				if delta != 0 {
+					// Track shift-by-shift fuel for diagnostics
+					matchTimeSec := web.arena.MatchTimeSec()
+					phase := game.GetMatchPhase(matchTimeSec)
+					trackShiftFuelForScoring(score, delta, phase, false)
+					scoreChanged = true
+				}
 			case "autoFuel":
 				if args.Autonomous {
 					score.AutoFuel = max(0, score.AutoFuel+args.Adjustment)
@@ -245,6 +261,42 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 
 		if scoreChanged {
 			web.arena.RealtimeScoreNotifier.Notify()
+		}
+	}
+}
+
+// trackShiftFuelForScoring tracks fuel scored during each match phase for diagnostic purposes.
+// This is used for manual scoring when there is no PLC.
+func trackShiftFuelForScoring(score *game.Score, delta int, phase game.MatchPhase, hubActive bool) {
+	if hubActive {
+		switch phase {
+		case game.PhaseTransition:
+			score.TransitionFuel += delta
+		case game.PhaseShift1:
+			score.Shift1Fuel += delta
+		case game.PhaseShift2:
+			score.Shift2Fuel += delta
+		case game.PhaseShift3:
+			score.Shift3Fuel += delta
+		case game.PhaseShift4:
+			score.Shift4Fuel += delta
+		case game.PhaseEndGame:
+			score.EndGameFuel += delta
+		}
+	} else {
+		switch phase {
+		case game.PhaseTransition:
+			score.TransitionFuelInactive += delta
+		case game.PhaseShift1:
+			score.Shift1FuelInactive += delta
+		case game.PhaseShift2:
+			score.Shift2FuelInactive += delta
+		case game.PhaseShift3:
+			score.Shift3FuelInactive += delta
+		case game.PhaseShift4:
+			score.Shift4FuelInactive += delta
+		case game.PhaseEndGame:
+			score.EndGameFuelInactive += delta
 		}
 	}
 }

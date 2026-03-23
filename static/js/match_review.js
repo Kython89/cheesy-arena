@@ -35,6 +35,20 @@ const renderResults = function (alliance) {
   getInputElement(alliance, "ActiveFuel").val(result.score.ActiveFuel || 0);
   getInputElement(alliance, "InactiveFuel").val(result.score.InactiveFuel || 0);
 
+  // Shift-by-shift diagnostic fields (read-only)
+  getInputElement(alliance, "TransitionFuel").val(result.score.TransitionFuel || 0);
+  getInputElement(alliance, "TransitionFuelInactive").val(result.score.TransitionFuelInactive || 0);
+  getInputElement(alliance, "Shift1Fuel").val(result.score.Shift1Fuel || 0);
+  getInputElement(alliance, "Shift1FuelInactive").val(result.score.Shift1FuelInactive || 0);
+  getInputElement(alliance, "Shift2Fuel").val(result.score.Shift2Fuel || 0);
+  getInputElement(alliance, "Shift2FuelInactive").val(result.score.Shift2FuelInactive || 0);
+  getInputElement(alliance, "Shift3Fuel").val(result.score.Shift3Fuel || 0);
+  getInputElement(alliance, "Shift3FuelInactive").val(result.score.Shift3FuelInactive || 0);
+  getInputElement(alliance, "Shift4Fuel").val(result.score.Shift4Fuel || 0);
+  getInputElement(alliance, "Shift4FuelInactive").val(result.score.Shift4FuelInactive || 0);
+  getInputElement(alliance, "EndGameFuel").val(result.score.EndGameFuel || 0);
+  getInputElement(alliance, "EndGameFuelInactive").val(result.score.EndGameFuelInactive || 0);
+
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;
 
@@ -74,6 +88,20 @@ const updateResults = function (alliance) {
   result.score.AutoFuel = parseInt(formData[`${alliance}AutoFuel`]) || 0;
   result.score.ActiveFuel = parseInt(formData[`${alliance}ActiveFuel`]) || 0;
   result.score.InactiveFuel = parseInt(formData[`${alliance}InactiveFuel`]) || 0;
+
+  // Shift-by-shift diagnostic fields (read-only but included for data integrity)
+  result.score.TransitionFuel = parseInt(formData[`${alliance}TransitionFuel`]) || 0;
+  result.score.TransitionFuelInactive = parseInt(formData[`${alliance}TransitionFuelInactive`]) || 0;
+  result.score.Shift1Fuel = parseInt(formData[`${alliance}Shift1Fuel`]) || 0;
+  result.score.Shift1FuelInactive = parseInt(formData[`${alliance}Shift1FuelInactive`]) || 0;
+  result.score.Shift2Fuel = parseInt(formData[`${alliance}Shift2Fuel`]) || 0;
+  result.score.Shift2FuelInactive = parseInt(formData[`${alliance}Shift2FuelInactive`]) || 0;
+  result.score.Shift3Fuel = parseInt(formData[`${alliance}Shift3Fuel`]) || 0;
+  result.score.Shift3FuelInactive = parseInt(formData[`${alliance}Shift3FuelInactive`]) || 0;
+  result.score.Shift4Fuel = parseInt(formData[`${alliance}Shift4Fuel`]) || 0;
+  result.score.Shift4FuelInactive = parseInt(formData[`${alliance}Shift4FuelInactive`]) || 0;
+  result.score.EndGameFuel = parseInt(formData[`${alliance}EndGameFuel`]) || 0;
+  result.score.EndGameFuelInactive = parseInt(formData[`${alliance}EndGameFuelInactive`]) || 0;
 
   for (let i = 0; i < 3; i++) {
     const i1 = i + 1;

@@ -71,6 +71,71 @@ UI for manually editing the result for a match.
   </fieldset>
 
   <fieldset>
+    <legend>Shift-by-Shift FUEL (Diagnostics)</legend>
+    <p class="text-muted small">These fields show fuel scored during each match phase. Values are read-only for reference.</p>
+    <div class="row mb-2">
+      <div class="col-lg-2">
+        <label class="form-label">Transition</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}TransitionFuel" min="0" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Trans. Inactive</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}TransitionFuelInactive" min="0" readonly>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-lg-2">
+        <label class="form-label">Shift 1</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift1Fuel" min="0" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Shift 1 Inactive</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift1FuelInactive" min="0" readonly>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-lg-2">
+        <label class="form-label">Shift 2</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift2Fuel" min="0" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Shift 2 Inactive</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift2FuelInactive" min="0" readonly>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-lg-2">
+        <label class="form-label">Shift 3</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift3Fuel" min="0" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Shift 3 Inactive</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift3FuelInactive" min="0" readonly>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-lg-2">
+        <label class="form-label">Shift 4</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift4Fuel" min="0" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">Shift 4 Inactive</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}Shift4FuelInactive" min="0" readonly>
+      </div>
+    </div>
+    <div class="row mb-2">
+      <div class="col-lg-2">
+        <label class="form-label">End Game</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}EndGameFuel" min="0" readonly>
+      </div>
+      <div class="col-lg-2">
+        <label class="form-label">End Game Inactive</label>
+        <input type="number" class="form-control" name="{{"{{alliance}}"}}EndGameFuelInactive" min="0" readonly>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
     <legend>Teleop Climb (TOWER)</legend>
     <div class="mb-3">
       {{range $i := seq 3}}
