@@ -7,8 +7,11 @@ var websocket;
 var currentMatch;
 var currentMatchTimeData = null;
 var currentScoreData = null;
+var currentArenaStatus = null;
 var displayAlliance = "Red"; // Which alliance's data to show, set from URL param
 var showInactive = false; // If true, show inactive fuel count instead of auto climb points
+
+// Note: matchStates is defined in match_timing.js
 
 // Game timing constants (must match game/match_timing.go)
 const transitionDurationSec = 10; // First 10 seconds of teleop when both hubs are active
@@ -40,6 +43,92 @@ const handleMatchTime = function (data) {
 const handleRealtimeScore = function (data) {
   currentScoreData = data;
   updateDisplay();
+};
+
+// Handles a websocket message to update the arena status (for button enable/disable).
+const handleArenaStatus = function (data) {
+  console.log("Received arenaStatus:", data);
+  currentArenaStatus = data;
+  updateButtonStates();
+};
+
+// Sends a websocket message to start the match.
+const startMatch = function () {
+  websocket.send("startMatch", {MuteMatchSounds: false});
+};
+
+// Sends a websocket message to abort the match.
+const abortMatch = function () {
+  websocket.send("abortMatch");
+};
+
+// Sends a websocket message to commit the match score.
+const commitResults = function () {
+  websocket.send("commitResults");
+};
+
+// Sends a websocket message to discard the match score.
+const discardResults = function () {
+  console.log("Sending discardResults command");
+  websocket.send("discardResults");
+};
+
+// Updates the enabled/disabled state of the control buttons based on arena status.
+const updateButtonStates = function () {
+  if (!currentArenaStatus) {
+    console.log("No arena status yet, disabling buttons");
+    $("#startMatch").prop("disabled", true);
+    $("#abortMatch").prop("disabled", true);
+    $("#commitResults").prop("disabled", true);
+    $("#discardResults").prop("disabled", true);
+    return;
+  }
+
+  const matchState = matchStates[currentArenaStatus.MatchState];
+  const canStartMatch = currentArenaStatus.CanStartMatch;
+  console.log("Updating button states - matchState:", matchState, "canStartMatch:", canStartMatch);
+
+  switch (matchState) {
+    case "PRE_MATCH":
+      $("#startMatch").prop("disabled", !canStartMatch);
+      $("#abortMatch").prop("disabled", true);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+      break;
+    case "START_MATCH":
+    case "WARMUP_PERIOD":
+    case "AUTO_PERIOD":
+    case "PAUSE_PERIOD":
+    case "TELEOP_PERIOD":
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", false);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+      break;
+    case "POST_MATCH":
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", true);
+      $("#commitResults").prop("disabled", false);
+      $("#discardResults").prop("disabled", false);
+      break;
+    case "TIMEOUT_ACTIVE":
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", false);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+      break;
+    case "POST_TIMEOUT":
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", true);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+      break;
+    default:
+      $("#startMatch").prop("disabled", true);
+      $("#abortMatch").prop("disabled", true);
+      $("#commitResults").prop("disabled", true);
+      $("#discardResults").prop("disabled", true);
+  }
 };
 
 // Determines if red won auto based on current score data.
@@ -301,8 +390,12 @@ $(function () {
   showInactive = (showInactiveParam === "true");
 
   updateDisplay();
+  updateButtonStates();
 
   websocket = new CheesyWebsocket("/displays/team_sign_back/websocket", {
+    arenaStatus: function (event) {
+      handleArenaStatus(event.data);
+    },
     audienceDisplayMode: function (event) {
       handleAudienceDisplayMode(event.data);
     },

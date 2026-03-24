@@ -1,5 +1,5 @@
 html {
-  cursor: none;
+  cursor: default;
   -webkit-user-select: none;
   -moz-user-select: none;
   overflow: hidden;
@@ -10,7 +10,8 @@ body {
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
   height: 100vh;
   width: 100vw;
@@ -21,6 +22,7 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  flex-grow: 1;
   gap: 1vh;
 }
 #displayLine1 {
@@ -44,4 +46,21 @@ body {
 /* Inactive shift color */
 .shift-inactive {
   color: #fff; /* White */
+}
+/* Control buttons at the bottom */
+#controlButtons {
+  width: 100%;
+  padding: 2vh;
+  display: flex;
+  justify-content: center;
+  gap: 2vw;
+}
+.btn-control {
+  font-size: 3vh;
+  padding: 1.5vh 3vw;
+  font-weight: bold;
+  min-width: 15vw;
+}
+.btn-control:disabled {
+  opacity: 0.4;
 }

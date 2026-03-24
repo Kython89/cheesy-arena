@@ -28,6 +28,20 @@ Single-line text display for the back of the team sign.
         <span>4:</span><span id="shift4Count">0</span>
       </div>
     </div>
+    <div id="controlButtons">
+      <button type="button" id="startMatch" class="btn btn-success btn-control" onclick="startMatch();">
+        Start Match
+      </button>
+      <button type="button" id="abortMatch" class="btn btn-danger btn-control" onclick="abortMatch();">
+        Abort Match
+      </button>
+      <button type="button" id="commitResults" class="btn btn-primary btn-control" onclick="commitResults();">
+        Commit Results
+      </button>
+      <button type="button" id="discardResults" class="btn btn-warning btn-control" onclick="discardResults();">
+        Discard Results
+      </button>
+    </div>
     <script src="/static/js/lib/jquery.min.js"></script>
     <script src="/static/js/lib/jquery.json-2.4.min.js"></script>
     <script src="/static/js/lib/jquery.websocket-0.0.1.js"></script>
