@@ -70,66 +70,120 @@ const (
 )
 
 // GetMatchPhase returns the current match phase for diagnostic tracking.
-// This is used to track fuel scored in each shift.
-// Accounts for the 3-second grace period where fuel scored at the start of a new phase
-// is still attributed to the previous phase (due to scoring mechanism processing time).
+// This is a convenience wrapper that uses grace period (for active fuel tracking).
 func GetMatchPhase(matchTimeSec float64) MatchPhase {
+	return GetMatchPhaseForTracking(matchTimeSec, true)
+}
+
+// GetMatchPhaseForTracking returns the current match phase for diagnostic tracking.
+// The hubActive parameter determines the phase boundaries:
+// - hubActive=true (active fuel): Phase starts immediately, extends 3 sec past end (25+3=28 sec window)
+// - hubActive=false (inactive fuel): Phase starts 3 sec after boundary, ends immediately (25-3=22 sec window)
+func GetMatchPhaseForTracking(matchTimeSec float64, hubActive bool) MatchPhase {
 	teleopStartSec := float64(MatchTiming.WarmupDurationSec + MatchTiming.AutoDurationSec + MatchTiming.PauseDurationSec)
 	teleopEndSec := teleopStartSec + float64(MatchTiming.TeleopDurationSec)
 	transitionEndSec := teleopStartSec + float64(TransitionDurationSec)
 	endGameStartSec := teleopEndSec - float64(EndGameDurationSec)
 	gracePeriodSec := float64(HubScoringGracePeriodSec)
 
-	// Before teleop starts (auto or pause), or in grace period after auto ends
-	if matchTimeSec < teleopStartSec+gracePeriodSec {
+	// Before teleop starts (auto or pause)
+	if matchTimeSec < teleopStartSec {
 		return PhaseAuto
 	}
 
-	// After match ends (no grace period needed - match is over)
+	// After match ends
 	if matchTimeSec >= teleopEndSec {
 		return PhaseNone
 	}
 
-	// End game (last 30 seconds of teleop), accounting for grace period into end game
-	// Once in end game, we stay in end game (no phase after it during match)
-	if matchTimeSec >= endGameStartSec+gracePeriodSec {
-		return PhaseEndGame
-	}
+	if hubActive {
+		// ACTIVE fuel tracking:
+		// - Phase starts immediately at boundary
+		// - Phase extends 3 seconds past the end (grace period for balls in flight)
 
-	// Transition period (first 10 seconds of teleop), or grace period into shift 1
-	if matchTimeSec < transitionEndSec+gracePeriodSec {
-		return PhaseTransition
-	}
+		// Transition: 0 to transitionEnd+3
+		if matchTimeSec < transitionEndSec+gracePeriodSec {
+			return PhaseTransition
+		}
 
-	// Alternating shifts (10-110 seconds into teleop)
-	// Account for grace period by subtracting it from the elapsed time
-	postTransitionSec := matchTimeSec - transitionEndSec - gracePeriodSec
-	if postTransitionSec < 0 {
-		return PhaseTransition
-	}
-
-	shift := int(postTransitionSec / ShiftDurationSec)
-	// Check if we're in the grace period for the next shift
-	timeInShift := postTransitionSec - float64(shift)*ShiftDurationSec
-	if timeInShift < gracePeriodSec && shift > 0 {
-		shift-- // Still count as previous shift during grace period
-	}
-
-	switch shift {
-	case 0:
-		return PhaseShift1
-	case 1:
-		return PhaseShift2
-	case 2:
-		return PhaseShift3
-	case 3:
-		return PhaseShift4
-	default:
-		// This handles the grace period before end game
+		// End game starts at endGameStartSec, but Shift 4 grace extends into it
+		// If we're in Shift 4 grace period, still count as Shift 4
 		if matchTimeSec >= endGameStartSec && matchTimeSec < endGameStartSec+gracePeriodSec {
 			return PhaseShift4
 		}
-		return PhaseEndGame
+
+		// End game (no grace needed at match end)
+		if matchTimeSec >= endGameStartSec {
+			return PhaseEndGame
+		}
+
+		// Alternating shifts - check if we're in a shift's grace period
+		postTransitionSec := matchTimeSec - transitionEndSec
+		shift := int(postTransitionSec / ShiftDurationSec)
+		shiftEndSec := transitionEndSec + float64(shift+1)*ShiftDurationSec
+
+		// If we're past the shift end but within grace, still count as this shift
+		if matchTimeSec >= shiftEndSec && matchTimeSec < shiftEndSec+gracePeriodSec {
+			// Still in grace period of current shift
+		} else if matchTimeSec >= shiftEndSec {
+			// Past grace period, move to next shift
+			shift++
+		}
+
+		switch shift {
+		case 0:
+			return PhaseShift1
+		case 1:
+			return PhaseShift2
+		case 2:
+			return PhaseShift3
+		case 3:
+			return PhaseShift4
+		default:
+			return PhaseEndGame
+		}
+	} else {
+		// INACTIVE fuel tracking:
+		// - Phase starts 3 seconds after boundary (after previous active grace ends)
+		// - Phase ends immediately at the next boundary
+
+		// Transition grace period - inactive scoring hasn't started yet
+		if matchTimeSec < transitionEndSec+gracePeriodSec {
+			return PhaseTransition // Still in transition grace, no inactive shift yet
+		}
+
+		// End game: inactive scoring ends immediately when end game starts
+		if matchTimeSec >= endGameStartSec {
+			return PhaseEndGame
+		}
+
+		// Alternating shifts with delayed start
+		// Inactive shift N starts at (shiftN_start + 3) and ends at shiftN_end
+		postTransitionSec := matchTimeSec - transitionEndSec
+		shift := int(postTransitionSec / ShiftDurationSec)
+		shiftStartSec := transitionEndSec + float64(shift)*ShiftDurationSec
+
+		// If we're in the first 3 seconds of this shift, we're still in the previous shift's grace
+		// For inactive, this means we count towards the previous inactive shift (or transition)
+		if matchTimeSec < shiftStartSec+gracePeriodSec {
+			if shift == 0 {
+				return PhaseTransition
+			}
+			shift--
+		}
+
+		switch shift {
+		case 0:
+			return PhaseShift1
+		case 1:
+			return PhaseShift2
+		case 2:
+			return PhaseShift3
+		case 3:
+			return PhaseShift4
+		default:
+			return PhaseEndGame
+		}
 	}
 }
 

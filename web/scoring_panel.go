@@ -235,8 +235,9 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				delta := score.ActiveFuel - oldActiveFuel
 				if delta != 0 {
 					// Track shift-by-shift fuel for diagnostics
+					// Active fuel uses grace period (hubActive=true)
 					matchTimeSec := web.arena.MatchTimeSec()
-					phase := game.GetMatchPhase(matchTimeSec)
+					phase := game.GetMatchPhaseForTracking(matchTimeSec, true)
 					trackShiftFuelForScoring(score, delta, phase, true)
 					scoreChanged = true
 				}
@@ -246,8 +247,9 @@ func (web *Web) scoringPanelWebsocketHandler(w http.ResponseWriter, r *http.Requ
 				delta := score.InactiveFuel - oldInactiveFuel
 				if delta != 0 {
 					// Track shift-by-shift fuel for diagnostics
+					// Inactive fuel uses immediate boundaries (hubActive=false)
 					matchTimeSec := web.arena.MatchTimeSec()
-					phase := game.GetMatchPhase(matchTimeSec)
+					phase := game.GetMatchPhaseForTracking(matchTimeSec, false)
 					trackShiftFuelForScoring(score, delta, phase, false)
 					scoreChanged = true
 				}

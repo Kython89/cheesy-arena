@@ -1241,7 +1241,6 @@ func (arena *Arena) handlePlcInputOutput() {
 				redWonAuto, blueWonAuto := arena.determineAutoWinner()
 
 				matchTimeSec := arena.MatchTimeSec()
-				matchPhase := game.GetMatchPhase(matchTimeSec)
 
 				if redDelta > 0 {
 					redHubActive := game.IsRedHubActiveForScoring(matchTimeSec, redWonAuto)
@@ -1251,7 +1250,9 @@ func (arena *Arena) handlePlcInputOutput() {
 						redScore.InactiveFuel += redDelta
 					}
 					// Track shift-by-shift fuel for diagnostics
-					arena.trackShiftFuel(redScore, redDelta, matchPhase, redHubActive)
+					// Use different phase boundaries for active vs inactive
+					redPhase := game.GetMatchPhaseForTracking(matchTimeSec, redHubActive)
+					arena.trackShiftFuel(redScore, redDelta, redPhase, redHubActive)
 				}
 
 				if blueDelta > 0 {
@@ -1262,7 +1263,9 @@ func (arena *Arena) handlePlcInputOutput() {
 						blueScore.InactiveFuel += blueDelta
 					}
 					// Track shift-by-shift fuel for diagnostics
-					arena.trackShiftFuel(blueScore, blueDelta, matchPhase, blueHubActive)
+					// Use different phase boundaries for active vs inactive
+					bluePhase := game.GetMatchPhaseForTracking(matchTimeSec, blueHubActive)
+					arena.trackShiftFuel(blueScore, blueDelta, bluePhase, blueHubActive)
 				}
 			}
 		}
