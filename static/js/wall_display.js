@@ -167,10 +167,13 @@ const handleRealtimeScore = function (data) {
 
 // Updates the hub activation indicators based on current match state and time
 const updateShiftDisplay = function(matchTimeSec, matchState) {
-  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  if (!matchTiming) {
+    return;
+  }
+  const teleopStartSec = matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec;
   const transitionDurationSec = 10;
   const shiftDurationSec = 25;
-  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const teleopEndSec = teleopStartSec + matchTiming.TeleopDurationSec;
 
   const transitionEndSec = teleopStartSec + transitionDurationSec;
   const shiftEndTime = teleopEndSec - 30; // 30s is end game
@@ -264,9 +267,12 @@ const updateHubIndicators = function(scoreData) {
 };
 
 const isRedHubActive = function(matchTimeSec, matchState, redWonAuto) {
-  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  if (!matchTiming) {
+    return true;
+  }
+  const teleopStartSec = matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec;
   const transitionDurationSec = 10; // First 10 seconds of teleop when both hubs are active
-  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const teleopEndSec = teleopStartSec + matchTiming.TeleopDurationSec;
   const endGameDurationSec = 30;
 
   // During auto and pause, both hubs are active
@@ -310,9 +316,12 @@ const isRedHubActive = function(matchTimeSec, matchState, redWonAuto) {
 };
 
 const isBlueHubActive = function(matchTimeSec, matchState, blueWonAuto) {
-  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  if (!matchTiming) {
+    return true;
+  }
+  const teleopStartSec = matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec;
   const transitionDurationSec = 10; // First 10 seconds of teleop when both hubs are active
-  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const teleopEndSec = teleopStartSec + matchTiming.TeleopDurationSec;
   const endGameDurationSec = 30;
 
   // During auto and pause, both hubs are active
@@ -356,10 +365,13 @@ const isBlueHubActive = function(matchTimeSec, matchState, blueWonAuto) {
 };
 
 const shouldHubFlash = function(matchTimeSec, matchState) {
-  const teleopStartSec = 23; // warmup(0) + auto(20) + pause(3)
+  if (!matchTiming) {
+    return false;
+  }
+  const teleopStartSec = matchTiming.WarmupDurationSec + matchTiming.AutoDurationSec + matchTiming.PauseDurationSec;
   const transitionDurationSec = 10;
   const transitionEndSec = teleopStartSec + transitionDurationSec;
-  const teleopEndSec = 163; // teleopStartSec + teleop(140)
+  const teleopEndSec = teleopStartSec + matchTiming.TeleopDurationSec;
   const shiftDurationSec = 25;
   const flashThresholdSec = 3;
 
