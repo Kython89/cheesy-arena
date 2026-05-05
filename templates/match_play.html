@@ -242,6 +242,11 @@ UI for controlling match play and viewing team connection and field status.
     </div>
   </div>
 </div>
+<datalist id="teamList">
+  {{range .Teams}}
+  <option value="{{.Id}}">{{.Id}} - {{.Nickname}}</option>
+  {{end}}
+</datalist>
 {{end}}
 {{define "script"}}
 <script src="/static/js/match_timing.js"></script>
@@ -251,7 +256,8 @@ UI for controlling match play and viewing team connection and field status.
 <div class="row mb-2" id="status{{.color}}{{.position}}">
   <div class="col-lg-1">{{.position}}</div>
   <div class="col-lg-3">
-    <input type="number" class="team-number form-control"
+    <input type="text" class="team-number form-control" list="teamList"
+      placeholder="Team #" autocomplete="off"
       onchange="$('#substituteTeams').prop('disabled', false);">
   </div>
   <div class="col-lg-2 col-no-padding">
