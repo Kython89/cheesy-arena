@@ -321,7 +321,9 @@
   margin: auto auto;
   z-index: 1;
   opacity: 0;
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 #bracketSvg {
   width: 1920px;
