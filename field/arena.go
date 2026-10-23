@@ -274,6 +274,11 @@ func (arena *Arena) LoadSettings() error {
 			Row:    settings.CompanionMatchAbortRow,
 			Column: settings.CompanionMatchAbortColumn,
 		},
+		partner.EventShowBracket: {
+			Page:   settings.CompanionBracketPage,
+			Row:    settings.CompanionBracketRow,
+			Column: settings.CompanionBracketColumn,
+		},
 	}
 	arena.CompanionClient = partner.NewCompanionClient(
 		settings.CompanionAddress,
@@ -656,6 +661,8 @@ func (arena *Arena) SetAudienceDisplayMode(mode string) {
 			go arena.CompanionClient.SendEvent(partner.EventMatchPreview)
 		} else if mode == "match" {
 			go arena.CompanionClient.SendEvent(partner.EventShowOverlay)
+		} else if mode == "bracket" {
+			go arena.CompanionClient.SendEvent(partner.EventShowBracket)
 		}
 	}
 }

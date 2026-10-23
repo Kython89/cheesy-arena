@@ -29,6 +29,7 @@ const (
 	EventShowFinalScore    CompanionEvent = "showFinalScore"
 	EventAllianceSelection CompanionEvent = "allianceSelection"
 	EventMatchAbort        CompanionEvent = "matchAbort"
+	EventShowBracket       CompanionEvent = "showBracket"
 )
 
 // CompanionEventConfig holds the page/row/column configuration for a specific event

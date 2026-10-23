@@ -111,6 +111,9 @@ type EventSettings struct {
 	CompanionMatchAbortPage          int
 	CompanionMatchAbortRow           int
 	CompanionMatchAbortColumn        int
+	CompanionBracketPage             int
+	CompanionBracketRow              int
+	CompanionBracketColumn           int
 	AutoDurationSec                  int
 	PauseDurationSec                 int
 	TransitionShiftDurationSec       int
